@@ -7,30 +7,36 @@ use std::path::Path;
 
 fn main() {
     println!("Welcome to my swiss army CLI utility.");
-    println!("Use --help for a list of all currently implemented commands.");
+    println!("run 'swiss --help' for a list of all currently implemented commands.");
 
-    let args: Vec<String> = env::args().collect();
+    let mut running = true;
 
-    let args_len = args.len();
-    match args_len {
-        x if x > 1 => println!("The command that will be executed is '{}'", args[1]),
-        x if x > 0 => {
-            println!("Please pass in the command you wish to run after the 'cargo run' command");
-            return;
+    while running {
+        let args: Vec<String> = env::args().collect();
+
+        let args_len = args.len();
+        match args_len {
+            x if x > 1 => println!("The command that will be executed is '{}'", args[1]),
+            x if x > 0 => {
+                println!(
+                    "Please pass in the command you wish to run after the 'cargo run' command"
+                );
+                continue;
+            }
+            _ => {
+                println!("No args provided");
+                continue;
+            }
         }
 
-        _ => {
-            println!("No args provided");
-            return;
-        }
-    }
-
-    let output: &str = match &args[1] {
+        let output: &str = match &args[1] {
             c if c == "ls" => "unfortunately I have just gotten started on this command and it isn't fully functional yet",
+            c if c == "quit" || c== "exit" => {exit(0)},
             _ => "This command is not yet supported. To view a list of commands, 'cargo run' with --help",
         };
 
-    println!("{}", output)
+        println!("{}", output)
+    }
 
     /*
        // Create a path to the desired file
