@@ -3,6 +3,7 @@ use std::io::prelude::*;
 use std::path::Path;
 use std::process::exit;
 use std::str::FromStr;
+use std::string::ParseError;
 use std::{env, usize};
 
 #[derive(Debug)]
@@ -11,13 +12,17 @@ struct VecString {
 }
 
 impl FromStr for VecString {
-    type Err = ParseStringError;
+    type Err = ParseError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.trim().parse() {
-            Ok(num) => Ok(VecString {
-                vec: vec![num.to_string()],
-            }),
-            Err(_) => Err(ParseStringError),
+        match s.trim().split_whitespace().collect() {
+            Ok(res) => {
+                let mut vec = Vec::new();
+                res.into_iter().for_each(|i| {
+                    vec.push(res);
+                });
+                return Ok(VecString { vec: vec });
+            }
+            Err(e) => Err(e),
         }
     }
 }
