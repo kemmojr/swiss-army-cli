@@ -1,10 +1,7 @@
-use std::fs::File;
-use std::io::prelude::*;
-use std::path::Path;
+use std::fmt::{self, Display};
 use std::process::exit;
 use std::str::FromStr;
 use std::string::ParseError;
-use std::{env, usize};
 
 #[derive(Debug)]
 struct VecString {
@@ -14,16 +11,25 @@ struct VecString {
 impl FromStr for VecString {
     type Err = ParseError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.trim().split_whitespace().collect() {
-            Ok(res) => {
-                let mut vec = Vec::new();
-                res.into_iter().for_each(|i| {
-                    vec.push(res);
-                });
-                return Ok(VecString { vec: vec });
-            }
-            Err(e) => Err(e),
+        if s.trim().split_whitespace().count() > 0 {
+            return Ok(VecString {
+                vec: s.trim().split_whitespace().map(|s| s.to_string()).collect(),
+            });
         }
+
+        return Ok(VecString { vec: vec![] });
+    }
+}
+
+impl Display for VecString {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut output = String::new();
+        for s in &self.vec {
+            output.push_str(&s);
+            output.push_str(" ");
+        }
+
+        return write!(f, "{}", output);
     }
 }
 
@@ -31,34 +37,7 @@ fn main() -> ! {
     println!("Welcome to my swiss army CLI utility.");
     println!("run 'swiss --help' for a list of all currently implemented commands.");
 
-    let mut running = true;
-
     loop {
-        let mut args: Vec<String> = env::args().collect();
-
-        let args_len = args.len();
-        match args_len {
-            x if x > 1 => println!("The command that will be executed is '{}'", args[1]),
-            x if x > 0 => {
-                println!(
-                    "Please pass in the command you wish to run after the 'cargo run' command"
-                );
-                continue;
-            }
-            _ => {
-                println!("No args provided");
-                continue;
-            }
-        }
-
-        let output: &str = match &args[1] {
-            c if c == "ls" => "unfortunately I have just gotten started on this command and it isn't fully functional yet",
-            c if c == "quit" || c== "exit" => {exit(0)},
-            _ => "This command is not yet supported. To view a list of commands, 'cargo run' with --help",
-        };
-
-        println!("{}", output);
-
         let mut input = std::io::stdin().read_line(&mut String::new());
 
         input = match input {
@@ -69,7 +48,37 @@ fn main() -> ! {
             }
         };
 
-        args = ToVec().from_str(&input);
+        let vec_string_input: VecString = input.unwrap().to_string().parse().unwrap();
+
+        println!("{}", vec_string_input);
+
+        let args = vec_string_input.vec;
+        let args_len = args.len();
+
+        match args_len {
+            x if x > 1 => println!("The command that will be executed is '{}'", args[0]),
+            x if x > 0 => {
+                println!("");
+            }
+            _ => {
+                println!("No args provided");
+            }
+        }
+
+        let output: &str = match &args[0] {
+            c if c == "swiss" && args_len > 2 && (args[1] == "--help" || args[1] == "help") => {
+                "Commands:
+                - 'ls' - list all files in the current directory
+                - 'quit' or 'exit' - exit the program
+                - 'help' - display this help message"
+            }
+            c if c == "ls" => "unfortunately I have just gotten started on this command and it isn't fully functional yet",
+            c if c == "quit" || c == "exit" => {exit(0)},
+            c if c.is_empty() => "Please enter a command. To see a list of all supported commands, run 'swiss --help'",
+            _ => "This command is not yet supported. To see a list of all supported commands, run 'swiss --help'",
+        };
+
+        println!("{}", output);
     }
 
     /*
