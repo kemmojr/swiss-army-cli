@@ -1,18 +1,35 @@
-use std::process::exit;
-use std::{env, usize};
-
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+use std::process::exit;
+use std::str::FromStr;
+use std::{env, usize};
 
-fn main() {
+#[derive(Debug)]
+struct VecString {
+    vec: Vec<String>,
+}
+
+impl FromStr for VecString {
+    type Err = ParseStringError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.trim().parse() {
+            Ok(num) => Ok(VecString {
+                vec: vec![num.to_string()],
+            }),
+            Err(_) => Err(ParseStringError),
+        }
+    }
+}
+
+fn main() -> ! {
     println!("Welcome to my swiss army CLI utility.");
     println!("run 'swiss --help' for a list of all currently implemented commands.");
 
     let mut running = true;
 
-    while running {
-        let args: Vec<String> = env::args().collect();
+    loop {
+        let mut args: Vec<String> = env::args().collect();
 
         let args_len = args.len();
         match args_len {
@@ -35,7 +52,19 @@ fn main() {
             _ => "This command is not yet supported. To view a list of commands, 'cargo run' with --help",
         };
 
-        println!("{}", output)
+        println!("{}", output);
+
+        let mut input = std::io::stdin().read_line(&mut String::new());
+
+        input = match input {
+            Ok(_) => input,
+            Err(_) => {
+                println!("There was an error reading the input. Please try again.");
+                continue;
+            }
+        };
+
+        args = ToVec().from_str(&input);
     }
 
     /*
