@@ -55,14 +55,19 @@ fn main() -> ! {
         let args = vec_string_input.vec;
         let args_len = args.len();
 
-        match args_len {
-            x if x > 1 => println!("The command that will be executed is '{}'", args[0]),
-            x if x > 0 => {
-                println!("");
-            }
-            _ => {
-                println!("No args provided");
-            }
+        if args.len() > 1 {
+            println!("The command that will be executed is '{}'", args[0]);
+        }
+
+        if args.len() > 2 {
+            print!("The command and args are '{}'", args[0].to_string());
+            print!("{}", args[1])
+        }
+
+        if args.len() > 3 {
+            print!("The command and args are '{}'", args[0]);
+            print!("{}", args[1]);
+            print!("{}", args[2]);
         }
 
         let output: &str = match &args[0] {
