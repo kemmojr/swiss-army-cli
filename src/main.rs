@@ -38,52 +38,55 @@ fn main() -> ! {
     println!("run 'swiss --help' for a list of all currently implemented commands.");
 
     loop {
-        let mut input = std::io::stdin().read_line(&mut String::new());
+        let mut input = String::new();
 
-        input = match input {
-            Ok(_) => input,
-            Err(_) => {
-                println!("There was an error reading the input. Please try again.");
-                continue;
-            }
+        std::io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
+
+        let vec_string_input: VecString = VecString {
+            vec: input
+                .trim()
+                .split_whitespace()
+                .map(|f| f.to_string())
+                .collect(),
         };
 
-        let vec_string_input: VecString = input.unwrap().to_string().parse().unwrap();
+        println!("{:?}", &vec_string_input);
 
-        println!("{}", vec_string_input);
+        let args = &vec_string_input.vec;
 
-        let args = vec_string_input.vec;
-        let args_len = args.len();
-
-        if args.len() > 1 {
-            println!("The command that will be executed is '{}'", args[0]);
+        if args.len() == 1 {
+            println!("The command that will be executed is '{}'", &args[0]);
         }
 
-        if args.len() > 2 {
-            print!("The command and args are '{}'", args[0].to_string());
-            print!("{}", args[1])
+        if args.len() == 2 {
+            print!("The command and args are '{:?}'", &args[0].to_string());
+            print!("{:?}", &args[1]);
+            println!("");
         }
 
-        if args.len() > 3 {
-            print!("The command and args are '{}'", args[0]);
-            print!("{}", args[1]);
-            print!("{}", args[2]);
+        if args.len() == 3 {
+            print!("The command and args are '{:?}'", &args[0]);
+            print!("{:?}", &args[1]);
+            print!("{:?}", &args[2]);
+            println!("");
         }
 
-        let output: &str = match &args[0] {
-            c if c == "swiss" && args_len > 2 && (args[1] == "--help" || args[1] == "help") => {
+        let output: &str = match &args[0][..] {
+            c if c == "swiss" && args.len() > 1 && (&args[1] == "--help" || &args[1] == "help") => {
                 "Commands:
                 - 'ls' - list all files in the current directory
                 - 'quit' or 'exit' - exit the program
                 - 'help' - display this help message"
             }
-            c if c == "ls" => "unfortunately I have just gotten started on this command and it isn't fully functional yet",
+            c if c == "ls" => &ls(),
             c if c == "quit" || c == "exit" => {exit(0)},
             c if c.is_empty() => "Please enter a command. To see a list of all supported commands, run 'swiss --help'",
             _ => "This command is not yet supported. To see a list of all supported commands, run 'swiss --help'",
         };
 
-        println!("{}", output);
+        println!("{}", &output);
     }
 
     /*
@@ -106,4 +109,10 @@ fn main() -> ! {
 
            // `file` goes out of scope, and the "hello.txt" file gets closed
     */
+}
+
+fn ls() -> String {
+    let path = std::path::Path::new(".");
+
+    return path.display().to_string();
 }
